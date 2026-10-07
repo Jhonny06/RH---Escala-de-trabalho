@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escala da Loja</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><img src="logo.jpg" alt="DG Tecnologia da Informação" class="logo"><h1>Escala de Trabalho</h1></div>
+  <div class="meta">
+    <label>Nº da loja<select id="lojaNum"></select></label>
+    <label>Loja<input type="text" id="loja" placeholder="Ex.: Loja70 – Centro de SP"></label>
+    <label>Gerente<input type="text" id="gerente" placeholder="Nome do gerente"></label>
+    <span id="syncSt" class="sync"></span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="escala" class="on">Escala</button>
+  <button data-tab="tarefas">Tarefas</button>
+  <button data-tab="horarios" class="so-dp">Horários</button>
+  <button data-tab="planejamento" class="so-dp">Planejamento</button>
+  <button data-tab="lojas" class="so-dp">Lojas</button>
+  <button data-tab="solic" class="so-dp">Solicitações <span id="solBadge" class="badge" hidden></span></button>
+</nav>
+
+<main>
+  <div class="banner" id="banner">Este navegador não está permitindo salvar os dados. O que for feito aqui será perdido ao fechar a página.</div>
+
+  <!-- ESCALA -->
+  <section id="tab-escala">
+    <div class="card no-print">
+      <div class="toolbar">
+        <div class="tb-left">
+          <div class="monthnav">
+            <button id="prev" aria-label="Mês anterior">‹</button>
+            <strong id="mlabel"></strong>
+            <button id="next" aria-label="Próximo mês">›</button>
+          </div>
+          <label class="filtro">Cargo
+            <select id="filtroCargo"><option value="">Todos</option></select>
+          </label>
+        </div>
+        <div class="tb-right">
+          <details class="menu">
+            <summary>Mais ações ▾</summary>
+            <div class="menu-pop">
+              <button id="rep1">Repetir 1ª semana no mês</button>
+              <button id="repPrev">Continuar do mês anterior</button>
+              <hr>
+              <button id="clear" class="danger">Limpar mês</button>
+            </div>
+          </details>
+          <button id="print" class="primary">Imprimir</button>
+        </div>
+      </div>
+      <div class="brush-area">
+        <span class="brush-tit">Preencher com</span>
+        <div class="brushes" id="brushes"></div>
+      </div>
+      <div class="custom-box" id="customBox">
+        <span class="small">Horário personalizado:</span>
+        <input type="time" id="cIni" value="09:00"> até
+        <input type="time" id="cFim" value="18:00">
+        intervalo <input type="number" id="cInt" value="60" min="0" step="5"> min
+      </div>
+      <p class="hint">Escolha um item e clique (ou arraste) nas células. Clique no número do dia para marcar feriado.</p>
+    </div>
+
+    <div class="card">
+      <div class="print-only ph" id="printHead"></div>
+      <div class="aprov-bar no-print"><span id="funcLoja" class="small"></span><span id="aprov" class="aprov"></span><button id="enviar" class="primary" hidden>Enviar para aprovação</button><button id="solicitar" class="primary so-ger">Solicitar alteração</button></div>
+      <div class="gridwrap" id="grid"></div>
+      <div id="alertas" class="no-print"></div>
+      <div id="minhasSol" class="so-ger no-print"></div>
+      <div class="no-print so-dp" style="margin-top:8px"><button id="addExtra">+ Adicionar extra</button> <span class="small">Para cobrir a ausência de alguém neste mês. Exige justificativa.</span></div>
+      <div class="print-only" id="printFoot"></div>
+    </div>
+  </section>
+
+  <!-- TAREFAS -->
+  <section id="tab-tarefas" hidden>
+    <div class="card no-print">
+      <div class="toolbar">
+        <div class="tb-left">
+          <div class="monthnav">
+            <button id="tprev" aria-label="Mês anterior">‹</button>
+            <strong id="tmlabel"></strong>
+            <button id="tnext" aria-label="Próximo mês">›</button>
+          </div>
+          <label class="filtro">Cargo
+            <select id="tFiltroCargo"><option value="">Todos</option></select>
+          </label>
+        </div>
+        <div class="tb-right">
+          <details class="menu">
+            <summary>Mais ações ▾</summary>
+            <div class="menu-pop">
+              <button id="trep1">Repetir 1ª semana no mês</button>
+              <hr>
+              <button id="tclear" class="danger">Limpar mês</button>
+            </div>
+          </details>
+          <button id="tprint" class="primary">Imprimir</button>
+        </div>
+      </div>
+      <div class="brush-area">
+        <span class="brush-tit">Preencher com</span>
+        <div class="brushes" id="tbrushes"></div>
+      </div>
+      <p class="hint">Escolha uma tarefa acima e clique (ou clique e arraste) nas células para preencher. Passar outra tarefa na mesma célula soma as duas. Use <b>Apagar</b> para limpar. Células listradas: o colaborador está de folga, férias ou atestado na escala.</p>
+    </div>
+
+    <div class="card">
+      <div class="print-only ph" id="tprintHead"></div>
+      <div class="gridwrap" id="tgrid"></div>
+      <div class="print-only" id="tprintFoot"></div>
+    </div>
+
+    <div class="card no-print so-dp">
+      <h3 style="margin-top:0">Tarefas cadastradas</h3>
+      <p class="small">Cadastre as tarefas administrativas da loja. O código aparece na grade.</p>
+      <div id="taskList"></div>
+      <button id="addTask" style="margin-top:10px">+ Nova tarefa</button>
+    </div>
+  </section>
+
+  <!-- EQUIPE: aba escondida. A base de colaboradores virá do Clock-in (Carol/TOTVS); os dados já cadastrados continuam valendo. -->
+  <section id="tab-equipe" hidden>
+    <div class="card">
+      <h3 style="margin-top:0">Adicionar colaborador</h3>
+      <form class="row" id="empForm">
+        <input type="text" id="empNome" placeholder="Nome" required style="flex:2;min-width:180px">
+        <select id="empFunc" required style="flex:1;min-width:140px"></select>
+        <button class="primary" type="submit">Adicionar</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Equipe da loja</h3>
+      <div id="planEquipe"></div>
+      <div id="empList"></div>
+    </div>
+  </section>
+
+  <!-- HORÁRIOS -->
+  <section id="tab-horarios" hidden>
+    <div class="card">
+      <h3 style="margin-top:0">Horários padrão</h3>
+      <p class="small">Cadastre os turnos usados na loja. O código aparece na grade da escala; as horas são calculadas descontando o intervalo.</p>
+      <div id="presetList"></div>
+      <button id="addPreset" style="margin-top:10px">+ Novo horário</button>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Regras trabalhistas aplicadas na escala</h3>
+      <ul class="small" style="margin:0;padding-left:18px;line-height:1.7">
+        <li><b>Descanso semanal:</b> no máximo 6 dias seguidos de trabalho; o 7º precisa ser folga (CLT art. 67; OJ 410 do TST). <i>Bloqueia o preenchimento.</i></li>
+        <li><b>Interjornada:</b> mínimo de 11h de descanso entre o fim de um turno e o início do próximo (CLT art. 66). <i>Bloqueia o preenchimento.</i></li>
+        <li><b>Jornada diária:</b> no máximo 10h trabalhadas no dia, 8h + 2h extras (CLT art. 59). <i>Bloqueia o preenchimento.</i></li>
+        <li><b>Intervalo:</b> acima de 6h de trabalho, intervalo de no mínimo 1h; de 4h a 6h, no mínimo 15 min (CLT art. 71). <i>Bloqueia o preenchimento.</i></li>
+        <li><b>Folga no domingo:</b> no comércio, a folga deve cair num domingo pelo menos 1 vez a cada 3 semanas (Lei 10.101/2000, art. 6º). <i>Alerta e impede o envio para aprovação.</i></li>
+        <li><b>Jornada semanal:</b> até 44h por semana, de segunda a domingo (CF art. 7º, XIII). <i>Apenas alerta.</i></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PLANEJAMENTO -->
+  <section id="tab-planejamento" hidden>
+    <div class="card">
+      <div class="toolbar">
+        <div class="tb-left">
+          <div class="monthnav">
+            <button id="pprev" aria-label="Mês anterior">‹</button>
+            <strong id="pmlabel"></strong>
+            <button id="pnext" aria-label="Próximo mês">›</button>
+          </div>
+          <label class="filtro">Loja <select id="pLoja"></select></label>
+          <span class="filtro">Supervisor <b id="pSup">—</b></span>
+        </div>
+        <div class="tb-right">
+          <details class="menu">
+            <summary>Mais ações ▾</summary>
+            <div class="menu-pop">
+              <button id="prep1">Repetir 1ª semana no mês (esta loja)</button>
+              <button id="pcopy">Copiar do mês anterior (todas as lojas)</button>
+              <hr>
+              <button id="pclear" class="danger">Limpar esta loja no mês</button>
+            </div>
+          </details>
+          <button id="pimpBtn">Importar planejamento</button>
+          <button id="pexp" class="primary">Exportar planejamento</button>
+          <input type="file" id="pimp" accept=".xlsx,.xls,.csv,.json" hidden>
+        </div>
+      </div>
+      <p class="hint"><b>Controladoria:</b> escolha a loja e informe, por dia, quantas pessoas de cada cargo devem trabalhar. Dá para colar um bloco do Excel (clique na célula e Ctrl+V) ou usar <b>Importar planejamento</b> (.xlsx). Depois, <b>Exportar planejamento</b> gera a planilha do Excel para os gerentes.<br><b>Gerente:</b> use <b>Importar planejamento</b> com a planilha recebida; ela entra direto no mês certo.</p>
+    </div>
+    <div class="card">
+      <div class="gridwrap" id="pgrid"></div>
+    </div>
+  </section>
+
+  <!-- LOJAS: base de lojas mantida pela controladoria (supervisor, local, funcionamento, filiais) -->
+  <section id="tab-lojas" hidden>
+    <div class="card">
+      <div class="toolbar">
+        <div class="tb-left">
+          <h3 style="margin:0">Base de lojas</h3>
+          <label class="filtro">Supervisor <select id="bSup"></select></label>
+          <label class="filtro">Buscar <input type="text" id="bBusca" placeholder="Qualquer coluna" style="width:170px"></label>
+          <span class="small" id="bCont"></span>
+        </div>
+        <div class="tb-right">
+          <button id="bAdd">+ Nova loja</button>
+          <button id="bImpBtn">Importar base</button>
+          <button id="bExp" class="primary">Exportar base</button>
+          <input type="file" id="bImp" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+      </div>
+      <p class="hint">As alterações valem para todas as telas: lista de lojas, supervisor que aprova a escala e horário de funcionamento. Horários no formato <b>10:00 - 22:00</b> ou <b>FECHADO</b>. Filiais separadas por vírgula; se o tipo de operação da filial for diferente da estrutura da loja, escreva entre parênteses, ex.: <b>3902 (MAGAZINE), 3309</b>.<br><b>Importar base</b> aceita a planilha de lojas (SUP, LOJA, LOCAL, GEO, TIPO DO LOCAL, ESTRUTURA, FUNC SEG À SEX, FUNC SÁB, FUNC DOM) e/ou a de filiais (FILIAL, PARA, TIPO OPERAÇÃO), no mesmo formato do <b>Exportar base</b>.</p>
+    </div>
+    <div class="card">
+      <div class="gridwrap" id="bList"></div>
+    </div>
+  </section>
+
+  <!-- SOLICITAÇÕES (coordenador de DP) -->
+  <section id="tab-solic" hidden>
+    <div class="card">
+      <div class="toolbar">
+        <div class="tb-left">
+          <h3 style="margin:0">Solicitações dos gerentes</h3>
+          <label class="filtro">Situação
+            <select id="solStatus"><option value="pendente">Pendentes</option><option value="">Todas</option><option value="concluida">Concluídas</option><option value="recusada">Recusadas</option></select>
+          </label>
+          <label class="filtro">Loja <select id="solLoja"></select></label>
+        </div>
+        <div class="tb-right"><button id="solAtualizar">Atualizar</button></div>
+      </div>
+      <div id="solLista"></div>
+    </div>
+  </section>
+
+  <!-- BACKUP: aba escondida (sem botão no menu). -->
+  <section id="tab-backup" hidden>
+    <div class="card">
+      <h3 style="margin-top:0">Backup dos dados</h3>
+      <p>Os dados ficam salvos <b>neste computador e neste navegador</b>. Se trocar de computador, limpar o navegador ou usar outro navegador, a escala não aparece. Exporte um backup com frequência.</p>
+      <div class="row">
+        <button class="primary" id="exp">Exportar backup (.json)</button>
+        <label class="row" style="gap:6px"><button type="button" id="impBtn">Importar backup</button><input type="file" id="imp" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Apagar tudo</h3>
+      <p class="small">Remove equipe, horários e todas as escalas deste navegador.</p>
+      <button class="danger" id="wipe">Apagar todos os dados</button>
+    </div>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="extraDlg">
+  <form id="extraForm" method="dialog">
+    <h3 id="extraTit" style="margin-top:0">Adicionar extra</h3>
+    <label class="fld">Nome<input type="text" id="exNome" required></label>
+    <label class="fld">Cargo<select id="exCargo" required></select></label>
+    <label class="fld">Justificativa<textarea id="exJust" rows="3" required placeholder="Ex.: cobrir as férias da Ana de 10 a 20/10"></textarea></label>
+    <div class="row" style="justify-content:flex-end;margin-top:12px">
+      <button type="button" id="exCancel">Cancelar</button>
+      <button type="submit" class="primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="solDlg">
+  <form id="solForm" method="dialog">
+    <h3 style="margin-top:0">Solicitar alteração na escala</h3>
+    <p class="small" style="margin:0" id="solRef"></p>
+    <label class="fld">Seu nome<input type="text" id="sNome" required maxlength="80"></label>
+    <label class="fld">Colaborador<select id="sColab"></select></label>
+    <label class="fld">Dia(s)<input type="text" id="sDias" maxlength="120" placeholder="Ex.: 10/10 ou de 10 a 12/10"></label>
+    <label class="fld">O que precisa mudar<select id="sTipo"></select></label>
+    <label class="fld">Descrição<textarea id="sDesc" rows="3" required maxlength="1000" placeholder="Ex.: trocar a folga da Ana do dia 10 para o dia 12"></textarea></label>
+    <div class="row" style="justify-content:flex-end;margin-top:12px">
+      <button type="button" id="sCancel">Cancelar</button>
+      <button type="submit" class="primary">Enviar ao DP</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script>/* o token do DP só é carregado fora do perfil gerente */
+if(!/[?&]perfil=gerente/.test(location.search))document.write('<script src="config-dp.js"><\/script>');</script>
+<script src="xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

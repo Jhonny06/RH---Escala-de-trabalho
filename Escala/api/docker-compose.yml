@@ -1,0 +1,13 @@
+services:
+  escala-api:
+    build: .
+    container_name: escala-api
+    restart: unless-stopped
+    environment:
+      ESCALA_API_TOKEN: ${ESCALA_API_TOKEN}
+    ports:
+      # Só em 127.0.0.1 — quem expõe para fora é o Apache, via ProxyPass
+      # (mesmo padrão do novanet-api). Troque 8092 se já estiver em uso.
+      - "127.0.0.1:8092:8080"
+    volumes:
+      - ./data:/app/data
